@@ -55,20 +55,20 @@ def oclcmarcRead(debug=0):
             if debug == 1:
                 print('\tform is ' + str(form))
 
-            gpoCheck = False
-            gpoVal = 'xxx'
-            try:
-                gpoVal = record['040']['d']
-                if str(gpoVal).upper() == 'GPO':
-                    gpoCheck = True
-            except (AttributeError, TypeError):
-                gpoCheck = False
+            # gpoCheck = False
+            # gpoVal = 'xxx'
+            # try:
+            #     gpoVal = record['040']['d']
+            #     if str(gpoVal).upper() == 'GPO':
+            #         gpoCheck = True
+            # except (AttributeError, TypeError):
+            #     gpoCheck = False
 
-            if debug == 1:
-                print('\tMARC 040 $d is ' + str(gpoVal))
-                print('\tgpoCheck ' + str(gpoCheck))
+            # if debug == 1:
+            #     print('\tMARC 040 $d is ' + str(gpoVal))
+            #     print('\tgpoCheck ' + str(gpoCheck))
 
-            oclcRecord = [oclcNumber, ldr06, form, gpoCheck]
+            oclcRecord = [oclcNumber, ldr06, form]
             oclcList.append(oclcRecord)
 
             if debug == 1:
@@ -96,8 +96,10 @@ def oclcmarcRead(debug=0):
 
 
             # writeResultsToCSV('bibNotes.csv',marc500List)
-    writeResultsToCSV('oclcRecs.csv', oclcList)
-    writeResultsToCSV('oclcNotes.csv', marc500List)
+    # writeResultsToCSV('oclcRecs.csv', oclcList)
+    # writeResultsToCSV('oclcNotes.csv', marc500List)
     addDataTooclcNotes(marc500List)
     return record
     # return (bibList, marc500List)
+
+oclcmarcRead()

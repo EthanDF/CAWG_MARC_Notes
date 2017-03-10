@@ -6,7 +6,6 @@ import sqlite3
 
 sqlite_file = 'notes_db.sqlite'
 
-
 def writeResultsToCSV(file, list):
     outputFile = 'output_files\\'+file
 
@@ -17,7 +16,7 @@ def writeResultsToCSV(file, list):
 def addDataTobibList(list):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.executemany('insert into alephBibs (bibNumber, OCN, LDRForm, Form, GPO) VALUES(?,?,?,?,?)',list)
+    c.executemany('insert into alephBibs (bibNumber, OCN, LDRForm, Form, GPO, GPub) VALUES(?,?,?,?,?,?)',list)
     conn.commit()
     # print('1):', all_rows)
     conn.close()
@@ -104,7 +103,17 @@ def marcRead(debug=0):
                 print('\tMARC 040 $d is ' + str(gpoVal))
                 print('\tgpoCheck ' + str(gpoCheck))
 
-            alephBib = [recID, oclcNumber, ldr06, form, gpoCheck]
+            gPub = False
+            gpoVal = record['008'].data[28:29]
+            if gpoVal != ' ':
+                gPub = True
+
+            if debug == 1:
+                print('\tgPub is: '+str(gPub)+'\n\tMARC008:28 is '+str(gpoVal))
+
+
+
+            alephBib = [recID, oclcNumber, ldr06, form, gpoCheck, gPub]
             bibList.append(alephBib)
 
             if debug == 1:
@@ -135,7 +144,8 @@ def marcRead(debug=0):
             if debug == 1:
                 stopper = input('press n to stop')
                 if stopper == 'n':
-                    print(1/0)
+                    return  record
+                    # print(1/0)
 
             # return record
 
