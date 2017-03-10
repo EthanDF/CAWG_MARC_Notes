@@ -1,0 +1,13 @@
+select a.bibNumber, a.OCN, a.LDRForm, a.Form, a.GPO, b.keybibNotes, b.NoteOrder, b.note, b.OwnCodeCount, o.notes
+    , n.KeyNoteAnalysis, n.keyoclcNotes, n.FuzzRatio, n.PartialRatio, n.TokenSetRatio, n.TokenSortRatio
+from alephBibs a
+join bibNotes b on a.bibNumber = b.bib
+left join notesAnalysis n on b.keybibNotes = n.keybibNotes
+left join oclcNotes o on a.OCN = o.oclc and n.keyoclcNotes = o.keyoclcNotes
+where 1=1
+--and a.bibNumber = 25032316
+--and b.ownCodeCount > 1
+
+--- 
+insert into oclcNotes (oclc, noteFormOrder, notes)
+select oclcNumber, formOrder, note from tempoclcNotes
