@@ -48,12 +48,11 @@ def marcRead(debug=0):
             # print(recordCounter)
             record.force_utf8 = True
             recordCounter += 1
-
             # Get MARC Record Attributes
 
             recID = record['001']
             if recID is None:
-                print("\tERROR: " + str(recordCounter) + ': No Record ID (MARC 001) Found")')
+                # print("\tERROR: " + str(recordCounter) + ': No Record ID (MARC 001) Found")')
                 recID = recordCounter
             else:
                 recID = recID.value()
@@ -128,7 +127,10 @@ def marcRead(debug=0):
                 noteList = []
                 noteList.append(recID)
                 noteList.append(marc500Counter)
-                noteList.append(note['a'])
+                noteForTable = note['a']
+                if noteForTable is None:
+                    continue
+                noteList.append(noteForTable)
                 noteList.append(note.subfields.count('5'))
                 marc500List.append(noteList)
                 marc500Counter += 1
@@ -150,6 +152,8 @@ def marcRead(debug=0):
             # return record
 
             # writeResultsToCSV('bibNotes.csv',marc500List)
+            # if recordCounter > 00000:
+            #     break
     addDataTobibList(bibList)
     addDataTobibNotes(marc500List)
 
@@ -158,3 +162,4 @@ def marcRead(debug=0):
     # return (bibList, marc500List)
 
 marcRead()
+print("\ndone!")

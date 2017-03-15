@@ -8,6 +8,8 @@ import sqlite3
 sqlite_file = 'notes_db.sqlite'
 
 def queryDB(table_name, column_2, inputID):
+    """this needs to be updated - the queries need to be specific - i'm getting too many bibs right now that I don't need
+    the result is too many comparisons. The OCLC numbers should be the binding results here"""
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
 
@@ -19,6 +21,29 @@ def queryDB(table_name, column_2, inputID):
 
     conn.close()
     return all_rows
+
+def buildKeyBibNotesDB():
+    """Query to get back the comparable rows of KeyBibNotes and the associated OCLC Number"""
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+
+    print('querying for KB Dictionary')
+    c.execute('select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join oclcNotes o on a.OCN = o.oclc where a.OCN > 0 and a.GPO = 0 and a.gPub = 0 and b.OwnCodeCount = 1')
+    all_rows = c.fetchall()
+    print('query finished')
+
+    conn.close()
+    return all_rows
+
+def kbnDictionary():
+    "create a dictionary of KeyBibNotes from query results"
+    kbn = {}
+    returnedRows = buildKeyBibNotesDB()
+    # print(type(kbn))
+    for r in returnedRows:
+        kbn[r[0]] = (r[1], r[2], r[3])
+    return kbn
+
 
 def addResultsTonotesAnalysis(list):
     conn = sqlite3.connect(sqlite_file)
@@ -95,26 +120,34 @@ def execute():
     bibs = bibIndex.keys()
     # maxValNotesAnalysis = getMaxKeyVal('notesAnalysis','keyNoteAnalysis')
     resultList = []
+    recordCounter = 0
 
-    for b in bibs:
-        ocn = bibIndex[b]
-        alephNotes = queryAlephNotesDB('bibNotes','bib',b)
+    print('\nStarting to build compare lists...')
+
+    bibNotesDict = kbnDictionary()
+
+    for b in bibNotesDict.keys():
+
+        # this query is too broad and returns uncomparable notes
+        # alephNotes = queryAlephNotesDB('bibNotes','bib',b)
+        alephNotes = bibNotesDict[b]
+        ocn = alephNotes[0]
         oclcNotes = queryDB('oclcNotes', 'oclc', ocn)
 
+        # print('working on bib: '+str(b))
         # print(alephNotes, oclcNotes)
 
         aN = []
-        for x in alephNotes:
-            keyBibNote = x[0]
-            keyBib = x[1]
-            aFormOrder = x[2]
-            aNote = x[3]
-            aSubFieldCount = x[4]
-            alephCompList = [keyBibNote, aNote]
-            aN.append(alephCompList)
+
+        keyBibNote = b
+        # keyBib = x[1]
+        aFormOrder = alephNotes[1]
+        aNote = alephNotes[2]
+        # aSubFieldCount = x[4]
+        alephCompList = [keyBibNote, aNote]
+        aN.append(alephCompList)
 
         # print("aN is: "+str(aN))
-
         oN = []
         for x in oclcNotes:
             keyOCLCNote = x[0]
@@ -124,7 +157,10 @@ def execute():
             oclcCompList = [keyOCLCNote, oNote]
             oN.append(oclcCompList)
 
+
         # print("oN is: " + str(oN))
+
+        # print('\tRunning the comparisons, record...')
 
         for x in aN:
             keyAlephNote = x[0]
@@ -150,8 +186,22 @@ def execute():
                 # writeResultsToCSV(keyAlephNote,keyOCLCNote,ratioRatio,ratioPartialRatio,ratioTokenSort,ratioTokenSet)
                 # maxValNotesAnalysis += 1
 
+                recordCounter += 1
+
+            if len(resultList) >= 1000:
+                print('\nwriting to database, up to record '+str(recordCounter))
+                addResultsTonotesAnalysis(resultList)
+                print('\nDone!')
+                resultList = []
+                # stop = input('press n to stop')
+                # if stop == 'n':
+                #     print(1/0)
+        # print('\tComparisons done! - resultList length at ' + str(len(resultList)))
+
+    print('writing to database')
     addResultsTonotesAnalysis(resultList)
-    return resultList
+    print('Done!')
+    # return resultList
 
 # marcRead()
 # oclcmarcRead()

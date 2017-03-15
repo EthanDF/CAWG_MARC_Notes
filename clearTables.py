@@ -15,9 +15,9 @@ def deleteTables():
     c = conn.cursor()
 
     c.execute('delete from notesAnalysis;')
-    c.execute('delete from oclcNotes;')
-    c.execute('delete from bibNotes;')
-    c.execute('delete from alephBibs;')
+    # c.execute('delete from oclcNotes;')
+    # c.execute('delete from bibNotes;')
+    # c.execute('delete from alephBibs;')
 
     # print('1):', all_rows)
 

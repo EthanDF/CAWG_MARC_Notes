@@ -7,3 +7,30 @@ join bibNotes b on a.bibNumber = b.bib
 left join notesAnalysis n on b.keybibNotes = n.keybibNotes
 left join oclcNotes o on a.OCN = o.oclc and n.keyoclcNotes = o.keyoclcNotes
 where 1=1
+
+-- see just the comparisons results
+select a.bibNumber, a.OCN, a.LDRForm, a.Form, a.GPO, a.gPub, b.keybibNotes, b.NoteOrder, b.note, b.OwnCodeCount, o.notes
+    , n.KeyNoteAnalysis, n.keyoclcNotes, n.FuzzRatio, n.PartialRatio, n.TokenSetRatio, n.TokenSortRatio
+from alephBibs a
+join bibNotes b on a.bibNumber = b.bib
+join notesAnalysis n on b.keybibNotes = n.keybibNotes
+join oclcNotes o on a.OCN = o.oclc and n.keyoclcNotes = o.keyoclcNotes
+where 1=1
+
+-- query to get the OCLC Numbers that need to be retrieved from OCLC for notes comparison
+SELECT distinct a.OCN
+from alephBibs a
+join bibNotes b on a.bibNumber = bib and b.OwnCodeCount = 1 -- has at least 1 MARC 500 w/ only 1 subfield $5
+where a.ocn > 0 -- (has an OCLC number)
+and gPub = 0  -- (not a government doc)
+and GPO = 0 -- (not a GPO doc)
+
+-- query for creating bibNotes dictionary, which is used to do the comparison:
+select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note
+from alephBibs a
+join bibNotes b on a.bibNumber = b.bib
+join oclcNotes o on a.OCN = o.oclc
+where a.OCN > 0
+and a.GPO = 0
+and a.gPub = 0
+and b.OwnCodeCount = 1
