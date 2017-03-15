@@ -28,7 +28,7 @@ def buildKeyBibNotesDB():
     c = conn.cursor()
 
     print('querying for KB Dictionary')
-    c.execute('select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join oclcNotes o on a.OCN = o.oclc where a.OCN > 0 and a.GPO = 0 and a.gPub = 0 and b.OwnCodeCount = 1')
+    c.execute('select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join oclcNotes o on a.OCN = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0 and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
     all_rows = c.fetchall()
     print('query finished')
 
@@ -188,10 +188,10 @@ def execute():
 
                 recordCounter += 1
 
-            if len(resultList) >= 1000:
-                print('\nwriting to database, up to record '+str(recordCounter))
+            if len(resultList) >= 10000:
+                print('writing to database, up to record '+str(recordCounter))
                 addResultsTonotesAnalysis(resultList)
-                print('\nDone!')
+                print('\tDone!')
                 resultList = []
                 # stop = input('press n to stop')
                 # if stop == 'n':
@@ -200,7 +200,7 @@ def execute():
 
     print('writing to database')
     addResultsTonotesAnalysis(resultList)
-    print('Done!')
+    print('Completely Done!')
     # return resultList
 
 # marcRead()

@@ -25,12 +25,14 @@ where a.ocn > 0 -- (has an OCLC number)
 and gPub = 0  -- (not a government doc)
 and GPO = 0 -- (not a GPO doc)
 
--- query for creating bibNotes dictionary, which is used to do the comparison:
+-- query for creating bibNotes dictionary, which is used to do the comparison (now works no matter what's already in DB):
 select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note
 from alephBibs a
 join bibNotes b on a.bibNumber = b.bib
 join oclcNotes o on a.OCN = o.oclc
+left join notesAnalysis n on b.keybibNotes = n.KeybibNotes
 where a.OCN > 0
 and a.GPO = 0
 and a.gPub = 0
 and b.OwnCodeCount = 1
+and n.KeybibNotes is null
