@@ -103,3 +103,4 @@ def oclcmarcRead(debug=0):
     # return (bibList, marc500List)
 
 oclcmarcRead()
+print("done!")

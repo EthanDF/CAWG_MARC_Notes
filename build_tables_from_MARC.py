@@ -47,7 +47,7 @@ def addDataTobibList(list):
 def addDataTobibNotes(list):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.executemany('insert into bibNotes (bib, noteOrder, note, OwnCodeCount) VALUES(?,?,?,?)',list)
+    c.executemany('insert into bibNotes (bib, noteOrder, note, OwnCodeCount, OwnCode) VALUES(?,?,?,?,?)',list)
 
     # print('1):', all_rows)
     conn.commit()
@@ -186,7 +186,12 @@ def marcRead(debug=0):
                     if noteForTable is None:
                         continue
                     noteList.append(noteForTable)
-                    noteList.append(note.subfields.count('5'))
+                    noteSubFieldCount = note.subfields.count('5')
+                    noteList.append(noteSubFieldCount)
+                    subFieldOwnCode = ''
+                    if noteSubFieldCount == 1:
+                        subFieldOwnCode = note['5']
+                    noteList.append(subFieldOwnCode)
                     marc500List.append(noteList)
                     marc500Counter += 1
                     maxBibNotes = + 1
