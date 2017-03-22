@@ -2,6 +2,7 @@ from pymarc import *
 import codecs
 import csv
 import sqlite3
+import time
 # from main import getMaxKeyVal
 
 sqlite_file = 'notes_db.sqlite'
@@ -12,6 +13,27 @@ def writeResultsToCSV(file, list):
     with codecs.open(outputFile, 'a', encoding='utf-8') as out:
         a = csv.writer(out, delimiter = ',', quoting=csv.QUOTE_ALL)
         a.writerows(list)
+
+def getExtantBibs():
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('select distinct bibNumber from alephBibs')
+    all_rows = c.fetchall()
+    conn.close()
+
+    extantBibList = []
+    for bib in all_rows:
+        extantBibList.append(bib[0])
+    return extantBibList
+
+def checkForOCLCNumber(oclcNumber):
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('Select * from alephBibs WHERE OCN = {my_id}'.
+              format(my_id=oclcNumber))
+    all_rows = c.fetchall()
+    conn.close()
+    return all_rows
 
 def addDataTobibList(list):
     conn = sqlite3.connect(sqlite_file)
@@ -39,6 +61,8 @@ def marcRead(debug=0):
     marc500List = []
     # maxBibNotes = getMaxKeyVal('bibNotes','keybibNotes')
     # maxBibNotes =+ 1
+    extantBibs = getExtantBibs()
+    extantBibSet = set(extantBibs)
 
     recordCounter = 0
     with open(marcFile, 'rb') as fh:
@@ -67,7 +91,7 @@ def marcRead(debug=0):
                     if debug == 1:
                         print(o)
                     if o['a'][:7] == '(OCoLC)':
-                        oclcNumber = int(record['035']['a'].replace('(OCoLC)',''))
+                        oclcNumber = int(o['a'].replace('(OCoLC)',''))
                         continue
             except (AttributeError, TypeError, ValueError):
                 if debug == 1:
@@ -76,6 +100,37 @@ def marcRead(debug=0):
 
             if debug == 1:
                 print('\tOCLCNumber is '+str(oclcNumber))
+
+            oclcNumberFound = False
+            skipper = 0
+            t0 = time.perf_counter()
+            if int(recID) in extantBibSet:
+                if int(recID) < 20000000:
+                    checkOCL = checkForOCLCNumber(oclcNumber)
+                    if len(checkOCL) > 0:
+                        oclcNumberFound = True
+                        skipper = 1
+                else:
+                    skipper = 1
+
+            if debug == 1:
+                if oclcNumberFound == True:
+                    print('\tBib found in alephBibs by OCLCNumber: id = '+str(recID)+
+                          'and oclcNumber ='+str(oclcNumber))
+                else:
+                    print('\tBib found in alephBibs id = ' + str(recID))
+
+            timeLapse = time.perf_counter() - t0
+            if debug == 1:
+                print('\t\tList scan took ' + str(timeLapse))
+
+            if debug == 1:
+                print('\tskipper = ' + str(skipper))
+                if skipper == 1:
+                    print('\tSkipping!!!')
+
+            if skipper == 1:
+                continue
 
             ldr06 = record.leader[6:7]
             if debug == 1:
@@ -111,36 +166,38 @@ def marcRead(debug=0):
                 print('\tgPub is: '+str(gPub)+'\n\tMARC008:28 is '+str(gpoVal))
 
 
+            if skipper == 0:
+                alephBib = [recID, oclcNumber, ldr06, form, gpoCheck, gPub]
+                bibList.append(alephBib)
 
-            alephBib = [recID, oclcNumber, ldr06, form, gpoCheck, gPub]
-            bibList.append(alephBib)
-
-            if debug == 1:
-                print('\tAlephBib Row looks like: '+str(alephBib))
+                if debug == 1:
+                    print('\tAlephBib Row looks like: '+str(alephBib))
 
             # Get MARC 500 Field Data
 
-            marc500s = record.get_fields('500')
-            marc500Counter = 0
+                marc500s = record.get_fields('500')
+                marc500Counter = 0
 
-            for note in marc500s:
-                noteList = []
-                noteList.append(recID)
-                noteList.append(marc500Counter)
-                noteForTable = note['a']
-                if noteForTable is None:
-                    continue
-                noteList.append(noteForTable)
-                noteList.append(note.subfields.count('5'))
-                marc500List.append(noteList)
-                marc500Counter += 1
-                maxBibNotes = + 1
+                for note in marc500s:
+                    noteList = []
+                    noteList.append(recID)
+                    noteList.append(marc500Counter)
+                    noteForTable = note['a']
+                    if noteForTable is None:
+                        continue
+                    noteList.append(noteForTable)
+                    noteList.append(note.subfields.count('5'))
+                    marc500List.append(noteList)
+                    marc500Counter += 1
+                    maxBibNotes = + 1
 
 
-            if debug == 1:
-                print('\tMarc500 Fields are:')
-                for marc500ListNotes in marc500s:
-                    print('\t'+str(marc500ListNotes))
+                if debug == 1:
+                    print('\tMarc500 Fields are:')
+                    for marc500ListNotes in marc500s:
+                        print('\t'+str(marc500ListNotes))
+            else:
+                print('\tskipped!')
 
             stopper = 'Nope'
             if debug == 1:
