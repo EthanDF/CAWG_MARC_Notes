@@ -2,6 +2,7 @@ from pymarc import *
 import codecs
 import csv
 import sqlite3
+import time
 
 sqlite_file = 'notes_db.sqlite'
 
@@ -21,11 +22,47 @@ def addDataTooclcNotes(list):
     conn.close()
     # return all_rows
 
+def addOCLCNumstooclcSans500(oclcSans500, debug):
+
+    print('adding records to oclcSans500')
+    if debug == 1:
+        return  oclcSans500
+    t0 = time.perf_counter()
+
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('select OCN from oclcSans500')
+    all_rows = c.fetchall()
+    conn.close()
+
+    oclcSans500List = []
+    for o in all_rows:
+        oclcSans500List.append(o[0])
+
+    o = set(oclcSans500List)
+
+    inputList = []
+    inputListSet = set(inputList)
+    for oclc in oclcSans500:
+        if oclc not in o and oclc not in inputListSet:
+            inputListSet.add(oclc)
+            inputList.append([oclc])
+
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.executemany('insert into oclcSans500 (OCN) VALUES(?)', inputList)
+    conn.commit()
+    conn.close()
+
+    timeLapse = time.perf_counter() - t0
+    print('finished adding OCLC records to oclcSans500 in '+str(timeLapse)+' seconds')
+
 def oclcmarcRead(debug=0):
     marcFile = 'testFiles\\oclcMARC.mrc'
 
     oclcList = []
     marc500List = []
+    oclcSans500 = []
 
     recordCounter = 0
     with open(marcFile, 'rb') as fh:
@@ -77,6 +114,10 @@ def oclcmarcRead(debug=0):
             # Get MARC 500 Field Data
 
             marc500s = record.get_fields('500')
+            if len(marc500s) == 0:
+                oclcSans500.append(int(oclcNumber))
+                if debug == 1:
+                    print('\tadding to Sans500')
             marc500Counter = 0
 
             for note in marc500s:
@@ -99,6 +140,7 @@ def oclcmarcRead(debug=0):
     # writeResultsToCSV('oclcRecs.csv', oclcList)
     # writeResultsToCSV('oclcNotes.csv', marc500List)
     addDataTooclcNotes(marc500List)
+    addOCLCNumstooclcSans500(oclcSans500, debug)
     return record
     # return (bibList, marc500List)
 

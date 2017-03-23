@@ -90,9 +90,13 @@ def marcRead(debug=0):
                 for o in marc035s:
                     if debug == 1:
                         print(o)
+                    if o['a'] is None:
+                        continue
                     if o['a'][:7] == '(OCoLC)':
                         oclcNumber = int(o['a'].replace('(OCoLC)',''))
                         continue
+                    else:
+                        pass
             except (AttributeError, TypeError, ValueError):
                 if debug == 1:
                     print('hit the 035 error!')
