@@ -1,0 +1,5 @@
+1)      Open the file in MarcEdit
+2)      Do a field edit update. Search LDR for the following: [^\x00-\x7F]+ (checking RegEx) and replace with “Q” since Q should not appear in a LDR anywhere
+3)      In MarcEdit, open the Delete Selected MARC Records
+4)      set the Display Field as LDR, import the file, then search for “Q”
+5)      Delete or export the selected records (depending on your purposes).

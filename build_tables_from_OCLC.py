@@ -22,6 +22,29 @@ def addDataTooclcNotes(list):
     conn.close()
     # return all_rows
 
+def getDataToaltOCLC():
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute('select altoclc from altOCLC')
+    all_rows = c.fetchall()
+    conn.close()
+
+    altOCLC = []
+    for oclc in all_rows:
+        altOCLC.append(oclc[0])
+
+    o = set(altOCLC)
+    return o
+
+def addDataToaltOCLC(list):
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.executemany('insert into altOCLC (altOCLC, oclc) VALUES(?,?)', list)
+    conn.commit()
+    # print('1):', all_rows)
+    conn.close()
+    # return all_rows
+
 def addOCLCNumstooclcSans500(oclcSans500, debug):
 
     print('adding records to oclcSans500')
@@ -63,6 +86,8 @@ def oclcmarcRead(debug=0):
     oclcList = []
     marc500List = []
     oclcSans500 = []
+    altOCLCSet = getDataToaltOCLC()
+    altOCLCSendList = []
 
     recordCounter = 0
     with open(marcFile, 'rb') as fh:
@@ -79,6 +104,33 @@ def oclcmarcRead(debug=0):
 
             if debug == 1:
                 print('\tOCLCNumber is '+str(oclcNumber))
+
+            altOCLCList = []
+
+            marc019s = record.get_fields('019')
+            for ocn in marc019s:
+                oList = ocn.value().split(' ')
+                for p in oList:
+                    altOCLCList.append([int(p),int(oclcNumber)])
+            altOCLCList.append([int(oclcNumber),int(oclcNumber)])
+
+            for oclc in altOCLCList:
+                if debug == 1:
+                    print('\tAlternative OCLC Number: '+str(oclc[0]))
+                if oclc[0] not in altOCLCSet:
+                    if debug == 1:
+                        print('\tAlternative OCLC Number is new - it will be written')
+                    altOCLCSet.add(oclc[0])
+                    altOCLCSendList.append(oclc)
+                    if debug == 1:
+                        print('\tAlternative OCLC Numbers have been written')
+
+            # if len(altOCLCSendList) > 0:
+            #     addDataToaltOCLC(altOCLCSendList)
+            #     if debug == 1:
+            #         print('\tadding to alt OCLC Table')
+            #         print('\t'+str(altOCLCSendList))
+
 
             ldr06 = record.leader[6:7]
             if debug == 1:
@@ -134,6 +186,12 @@ def oclcmarcRead(debug=0):
                 for marc500ListNotes in marc500s:
                     print('\t'+str(marc500ListNotes))
 
+            braker = 'n'
+            if debug == 1:
+                braker = input('stop?')
+                if braker == 'y':
+                    return record
+
 
 
             # writeResultsToCSV('bibNotes.csv',marc500List)
@@ -141,6 +199,7 @@ def oclcmarcRead(debug=0):
     # writeResultsToCSV('oclcNotes.csv', marc500List)
     addDataTooclcNotes(marc500List)
     addOCLCNumstooclcSans500(oclcSans500, debug)
+    addDataToaltOCLC(altOCLCSendList)
     return record
     # return (bibList, marc500List)
 
