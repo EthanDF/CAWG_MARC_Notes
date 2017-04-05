@@ -50,22 +50,23 @@ and a.gPub = 0
 
 --query to see the rows where none of the keybibnotes have a 100% match
 select --distinct a.form
-a.bibNumber, a.OCN, a.LDRForm, a.Form, a.GPO, a.gPub, b.keybibNotes, b.NoteOrder, b.note, o.notes
+a.bibNumber, a.OCN, c.oclc, a.LDRForm, a.Form, a.GPO, a.gPub, b.keybibNotes, b.NoteOrder, b.note, o.notes as OCLCNotes
     , n.KeyNoteAnalysis, n.keyoclcNotes, n.FuzzRatio, n.PartialRatio, n.TokenSetRatio, n.TokenSortRatio
 from alephBibs a
+--join fiu f on a.bibNumber = f.bib
 join bibNotes b on a.bibNumber = b.bib
 join notesAnalysis n on b.keybibNotes = n.keybibNotes
-join oclcNotes o on a.OCN = o.oclc and n.keyoclcNotes = o.keyoclcNotes
+join altOCLC c on a.OCN = c.altoclc
+join oclcNotes o on c.oclc = o.oclc and n.keyoclcNotes = o.keyoclcNotes
 where 1=1
-and b.owncode = 'FFmFGC'
+and b.owncode = 'FMFIU'
 --and a.form not in(' ')
 and b.keybibnotes in(
 select b.keyBibNotes
 from bibNotes b
 join notesAnalysis n on b.keyBibNotes = n.keyBibNotes
 where 1=1
-and b.owncode = 'FFmFGC'
---and b.bib = 20152743
+and b.owncode = 'FMFIU'
 group by b.keyBibNotes, b.bib, b.note, b.owncode, b.noteorder
 having sum(case when TokenSortRatio = 100 then 1 else 0 end) < 1
 )
