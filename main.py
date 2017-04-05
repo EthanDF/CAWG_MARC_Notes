@@ -28,7 +28,7 @@ def buildKeyBibNotesDB():
     c = conn.cursor()
 
     print('querying for KB Dictionary')
-    c.execute('select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join oclcNotes o on a.OCN = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0 and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
+    c.execute('select distinct b.keybibNotes, c.oclc, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join altOCLC c on a.OCN = c.altoclc join oclcNotes o on c.oclc = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0  and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
     all_rows = c.fetchall()
     print('query finished')
 
@@ -99,7 +99,7 @@ def getBibToOCN():
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
 
-    c.execute('SELECT * FROM alephBibs')
+    c.execute('SELECT distinct a.bibNumber, c.oclc FROM alephBibs a join altOCLC c on a.ocn = c.oclc where a.OCN > 0 and a.GPO = 0 and a.gPub = 0')
     bibsToOCNS = c.fetchall()
     conn.close()
     return bibsToOCNS
