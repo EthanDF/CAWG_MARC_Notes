@@ -141,12 +141,29 @@ def marcRead(debug=0):
                 print('\tldr06 is ' + str(ldr06))
 
             form = 'x'
-            if ldr06 in('a','t','s','m''p','i','j','c','d'):
-                form = record['008'].value()[23:24]
+            if record['008'] is not None:
+                if ldr06 in('a','t','s','m''p','i','j','c','d'):
+                    form = record['008'].value()[23:24]
+                else:
+                    form = record['008'].value()[29:30]
+                if debug == 1:
+                    print('\tform is ' + str(form))
+
+                gPub = False
+                gpoVal = record['008'].data[28:29]
+                if gpoVal != ' ':
+                    gPub = True
+
+                if debug == 1:
+                    print('\tgPub is: ' + str(gPub) + '\n\tMARC008:28 is ' + str(gpoVal))
             else:
-                form = record['008'].value()[29:30]
-            if debug == 1:
-                print('\tform is ' + str(form))
+                print('record #' +str(recordCounter)+', recordID: '+str(recID)+', has no MARC 008 field')
+                form = None
+                if debug == 1:
+                    print('\tform is ' + str(form))
+                gPub = None
+                if debug == 1:
+                    print('\tgPub is: ' + str(gPub) + '\n\tMARC008:28 is ' + str(None))
 
             gpoCheck = False
             gpoVal = 'xxx'
@@ -161,13 +178,6 @@ def marcRead(debug=0):
                 print('\tMARC 040 $d is ' + str(gpoVal))
                 print('\tgpoCheck ' + str(gpoCheck))
 
-            gPub = False
-            gpoVal = record['008'].data[28:29]
-            if gpoVal != ' ':
-                gPub = True
-
-            if debug == 1:
-                print('\tgPub is: '+str(gPub)+'\n\tMARC008:28 is '+str(gpoVal))
 
 
             if skipper == 0:

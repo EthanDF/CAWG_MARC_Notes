@@ -22,10 +22,12 @@ SELECT distinct a.OCN
 from alephBibs a
 join bibNotes b on a.bibNumber = bib and b.OwnCodeCount = 1 -- has at least 1 MARC 500 w/ only 1 subfield $5
 left join oclcSans500 s on s.ocn = a.ocn
+left join altOCLC o on a.ocn = o.altoclc
 where a.ocn > 0 -- (has an OCLC number)
 and gPub = 0  -- (not a government doc)
 and GPO = 0 -- (not a GPO doc)
 and s.ocn is null
+and o.oclc is null
 
 -- query for creating bibNotes dictionary, which is used to do the comparison (now works no matter what's already in DB):
 select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note

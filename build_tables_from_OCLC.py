@@ -105,6 +105,8 @@ def oclcmarcRead(debug=0):
             if debug == 1:
                 print('\tOCLCNumber is '+str(oclcNumber))
 
+            print(str(recordCounter) + ', OCLC: ' + str(oclcNumber))
+
             altOCLCList = []
 
             marc019s = record.get_fields('019')
@@ -186,10 +188,10 @@ def oclcmarcRead(debug=0):
                 for marc500ListNotes in marc500s:
                     print('\t'+str(marc500ListNotes))
 
-            braker = 'n'
+            breaker = 'n'
             if debug == 1:
-                braker = input('stop?')
-                if braker == 'y':
+                breaker = input('stop?')
+                if breaker == 'y':
                     return record
 
 

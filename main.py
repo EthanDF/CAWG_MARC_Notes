@@ -117,7 +117,7 @@ def writeResultsToCSV(keyNoteAnalysis, KeybibNotes, keyoclcNotes, ratioRatio,rat
 def execute():
     bibsToOCNS = getBibToOCN()
     bibIndex = createBibIndex(bibsToOCNS)
-    bibs = bibIndex.keys()
+    # bibs = bibIndex.keys()
     # maxValNotesAnalysis = getMaxKeyVal('notesAnalysis','keyNoteAnalysis')
     resultList = []
     recordCounter = 0
