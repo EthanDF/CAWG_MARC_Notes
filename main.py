@@ -1,6 +1,7 @@
 from fuzzywuzzy import fuzz
 import csv
 import codecs
+import time
 # from build_tables_from_MARC import *
 # from build_tables_from_OCLC import *
 
@@ -28,7 +29,7 @@ def buildKeyBibNotesDB():
     c = conn.cursor()
 
     print('querying for KB Dictionary')
-    c.execute('select distinct b.keybibNotes, c.oclc, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join altOCLC c on a.OCN = c.altoclc join oclcNotes o on c.oclc = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0  and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
+    c.execute('select distinct b.keybibNotes, c.oclc, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join altOCLC c on a.OCN = c.altoclc e join oclcNotes o on c.oclc = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0  and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
     all_rows = c.fetchall()
     print('query finished')
 
@@ -115,8 +116,9 @@ def writeResultsToCSV(keyNoteAnalysis, KeybibNotes, keyoclcNotes, ratioRatio,rat
         a.writerows(data)
 
 def execute():
-    bibsToOCNS = getBibToOCN()
-    bibIndex = createBibIndex(bibsToOCNS)
+    t0 = time.perf_counter()
+    # bibsToOCNS = getBibToOCN()
+    # bibIndex = createBibIndex(bibsToOCNS)
     # bibs = bibIndex.keys()
     # maxValNotesAnalysis = getMaxKeyVal('notesAnalysis','keyNoteAnalysis')
     resultList = []
@@ -151,8 +153,8 @@ def execute():
         oN = []
         for x in oclcNotes:
             keyOCLCNote = x[0]
-            oclcNumber = x[1]
-            nFormOrder = x[2]
+            # oclcNumber = x[1]
+            # nFormOrder = x[2]
             oNote = x[3]
             oclcCompList = [keyOCLCNote, oNote]
             oN.append(oclcCompList)
@@ -190,8 +192,10 @@ def execute():
 
             if len(resultList) >= 10000:
                 print('writing to database, up to record '+str(recordCounter))
+                t1 = time.perf_counter()
                 addResultsTonotesAnalysis(resultList)
-                print('\tDone!')
+                writingTimeLapse = time.perf_counter() - t1
+                print('\tDone! (in '+str(writingTimeLapse)+' seconds)')
                 resultList = []
                 # stop = input('press n to stop')
                 # if stop == 'n':
@@ -200,7 +204,8 @@ def execute():
 
     print('writing to database')
     addResultsTonotesAnalysis(resultList)
-    print('Completely Done!')
+    totaltimeLapse = time.perf_counter() - t0
+    print('Completely Done! (in '+str(totaltimeLapse)+' seconds)')
     # return resultList
 
 # marcRead()
