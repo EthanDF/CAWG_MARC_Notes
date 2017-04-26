@@ -2,69 +2,69 @@ notes_db DB Explainer:
 
 * AlephBibs - 
 	contains data about the aleph bib records extracted directly from records downloaded from Aleph - usually report but occassionally production
-	bibNumber (integer) - the MARC 001 field - if no 001 field prints, a generic counter value is used
-	OCN (integer) - the first OCLC number from the MARC 035 value in the Aleph record defined as starting with "(OCoLC)" - if no OCLC number exists for the record, the value is set to -1
-	LDRForm (char(1)) - value extracted from the LDR06
-	Form (char(1)) - form value extracted from the MARC 008
-	GPO (1/0) - equal to 1 if Aleph bib record contains a MARC 040$d = "GPO"
-	gPub (1/0) - equal to 1 if the government pub field value from the MARC 008 is not blank.
+	- bibNumber (integer) - the MARC 001 field - if no 001 field prints, a generic counter value is used
+	- OCN (integer) - the first OCLC number from the MARC 035 value in the Aleph record defined as starting with "(OCoLC)" - if no OCLC number exists for the record, the value is set to -1
+	- LDRForm (char(1)) - value extracted from the LDR06
+	- Form (char(1)) - form value extracted from the MARC 008
+	- GPO (1/0) - equal to 1 if Aleph bib record contains a MARC 040$d = "GPO"
+	- gPub (1/0) - equal to 1 if the government pub field value from the MARC 008 is not blank.
 	
 * altOCLC - 
 	contains the relationship between OCLC Numbers and MARC 019 (cancelled OCLC Numbers) as extracted during the reading of OCLC MARC records
-	keyaltoclc (integer) - primary key of table
-	altOCLC (integer) - either the MARC 019 value or the actual oclc number
-	oclc (integer) - the oclc number for the record
+	- keyaltoclc (integer) - primary key of table
+	- altOCLC (integer) - either the MARC 019 value or the actual oclc number
+	- oclc (integer) - the oclc number for the record
 
 * BibNotes - 
 	contains data about the MARC 500 record associated with the aleph bib number as extracted from the Aleph Bib records. Each row should have a corresponding row on AlephBibs.
-	keybibNotes (integer) - primary key of table
-	bib (integer) - fk of AlephBibs
-	NoteOrder (integer) - the order of MARC 500 field from the Aleph record. Serves as a uniqueness index.
-	note (text) - the MARC 500 string from the subfield $a of the Aleph record.
-	OwnCodeCount (integer) - the number of subfield $5 values associated with the note.
-	OwnCode (STRING) - only populated when OwnCodeCount is 1 (not enforced on the table). The subfield $5 associated with the MARC 500 field.
+	- keybibNotes (integer) - primary key of table
+	- bib (integer) - fk of AlephBibs
+	- NoteOrder (integer) - the order of MARC 500 field from the Aleph record. Serves as a uniqueness index.
+	- note (text) - the MARC 500 string from the subfield $a of the Aleph record.
+	- OwnCodeCount (integer) - the number of subfield $5 values associated with the note.
+	- OwnCode (STRING) - only populated when OwnCodeCount is 1 (not enforced on the table). The subfield $5 associated with the MARC 500 field.
 	
 * DupOCLC - 
 	a temporary table designed to identify duplicated rows on oclcNotes.
-	oclc (integer) - fk of oclcNotes
-	notes (text) - the note string
-	count(keyOCLCNotes) (none) - the number of keys found (i.e. how large the duplicated set is)
+	- oclc (integer) - fk of oclcNotes
+	- notes (text) - the note string
+	- count(keyOCLCNotes) (none) - the number of keys found (i.e. how large the duplicated set is)
 
 *FGCU - 
 	a temporary table designed to identify the bibNumbers associated with FGCU. Some of the values may not exist on AlephBibs due to a lack of printed MARC 001 value.
-	bibNumber (integer) - fk of alephBibs
+	- bibNumber (integer) - fk of alephBibs
 
 *FIU - 
 	a temporary table designed to identify the bibNumbers associated with FIU. Some of the values may not exist on AlephBibs due to a lack of printed MARC 001 value.
-	bib (integer) - fk of alephBibs
+	- bib (integer) - fk of alephBibs
 
 * FIU_OCN - 
 	a temporary table designed to update AlephBibs with the correct bib number based on a match between the OCLC number on this table and on alephBibs. Not yet utilized.
-	bib (integer) - fk of FIU
-	OCLC (integer) - the OCLC number associated with the bib in Aleph
+	- bib (integer) - fk of FIU
+	- OCLC (integer) - the OCLC number associated with the bib in Aleph
 
 * FSU_OCLC - 
 	a temporary table designed to update AlephBibs with the correct bib number based on a match between the OCLC number on this table and on alephBibs. Not yet utilized.
-	bib (integer) - fk of FSU (not fully implemented yet)
-	OCLC (integer) - the OCLC number associated with the bib in Aleph
+	- bib (integer) - fk of FSU (not fully implemented yet)
+	- OCLC (integer) - the OCLC number associated with the bib in Aleph
 
 * notesAnalysis - 
 	contains the results of comparisons between AlephNotes and OCLCNotes utilizing the fuzzywuzzy near matching ratios.
-	KeyNoteAnalysis (integer) - key of table
-	keybibNotes (integer) - fk of BibNotes
-	keyoclcNotes (integer) - fk of oclcNotes
-	FuzzRatio (integer) - result of fuzz.Ratio
-	ParitialRatio (integer) - result of fuzz.PartialRatio
-	TokenSortRatio (integer) - result of fuzz.TokenSortRatio
-	TokenSetRatio (integer) - result of fuzz.TokenSetRatio
+	- KeyNoteAnalysis (integer) - key of table
+	- keybibNotes (integer) - fk of BibNotes
+	- keyoclcNotes (integer) - fk of oclcNotes
+	- FuzzRatio (integer) - result of fuzz.Ratio
+	- ParitialRatio (integer) - result of fuzz.PartialRatio
+	- TokenSortRatio (integer) - result of fuzz.TokenSortRatio
+	- TokenSetRatio (integer) - result of fuzz.TokenSetRatio
 
 * oclcNotes - 
 	contains data about the MARC 500 fields from the OCLC Records downloaded as corresponding to the OCLC numbers on the Aleph Bib records.
-	keyOCLCNotes (integer) - key of the table
-	oclc (integer) - the oclc number for the MARC record from OCLC
-	noteFormOrder (integer) - the order of MARC 500 field from the OCLC record. Serves as a uniqueness index.
-	notes (text) - the MARC 500 string from the subfield $a of the OCLC record.
+	- keyOCLCNotes (integer) - key of the table
+	- oclc (integer) - the oclc number for the MARC record from OCLC
+	- noteFormOrder (integer) - the order of MARC 500 field from the OCLC record. Serves as a uniqueness index.
+	- notes (text) - the MARC 500 string from the subfield $a of the OCLC record.
 
 oclcSans500 - 
 	contains OCLC numbers found but that do not have any MARC 500 fields. Needed to return MARC 500 fields from AlephNotes that have no value in notesAnalysis
-	OCN (integer) - the OCLC number found to not have any MARC 500 fields.
+	- OCN (integer) - the OCLC number found to not have any MARC 500 fields.
