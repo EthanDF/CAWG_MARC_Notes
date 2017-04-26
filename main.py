@@ -2,6 +2,7 @@ from fuzzywuzzy import fuzz
 import csv
 import codecs
 import time
+import unicodedata
 # from build_tables_from_MARC import *
 # from build_tables_from_OCLC import *
 
@@ -29,7 +30,7 @@ def buildKeyBibNotesDB():
     c = conn.cursor()
 
     print('querying for KB Dictionary')
-    c.execute('select distinct b.keybibNotes, c.oclc, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join altOCLC c on a.OCN = c.altoclc e join oclcNotes o on c.oclc = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0  and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
+    c.execute('select distinct b.keybibNotes, a.OCN, b.NoteOrder, b.note from alephBibs a join bibNotes b on a.bibNumber = b.bib join altOCLC c on a.OCN = c.altoclc join oclcNotes o on c.oclc = o.oclc left join notesAnalysis n on b.keybibNotes = n.KeybibNotes where a.OCN > 0 and a.GPO = 0 and a.gPub = 0 and b.OwnCodeCount = 1 and n.KeybibNotes is null')
     all_rows = c.fetchall()
     print('query finished')
 
@@ -115,6 +116,14 @@ def writeResultsToCSV(keyNoteAnalysis, KeybibNotes, keyoclcNotes, ratioRatio,rat
         a = csv.writer(out, delimiter = ',', quoting=csv.QUOTE_ALL)
         a.writerows(data)
 
+def normalizeUnicodeString(noteValue):
+    """employ the unicodedata library to try to normalize characters that are unicode"""
+    w = noteValue
+    for char in noteValue:
+        w = unicodedata.normalize('NFD',noteValue)
+
+    return  w
+
 def execute():
     t0 = time.perf_counter()
     # bibsToOCNS = getBibToOCN()
@@ -166,11 +175,17 @@ def execute():
 
         for x in aN:
             keyAlephNote = x[0]
+            # add some unicode normalization to the strings prior to comparisons
             alephNoteVal = x[1]
+            alephNoteVal = normalizeUnicodeString(alephNoteVal)
 
             for y in oN:
                 keyOCLCNote = y[0]
                 oclcNoteVal = y[1]
+
+                # add some unicode normalization to the strings prior to comparisons
+                oclcNoteVal = x[1]
+                oclcNoteVal = normalizeUnicodeString(oclcNoteVal)
 
                 ratioRatio = fuzz.ratio(alephNoteVal, oclcNoteVal)
                 ratioPartialRatio = fuzz.partial_ratio(alephNoteVal, oclcNoteVal)
