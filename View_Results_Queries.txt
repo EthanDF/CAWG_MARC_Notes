@@ -83,3 +83,23 @@ join fiu f on a.bibNumber = f.bib
 join bibNotes b on a.bibNumber = b.bib and b.owncode = 'FMFIU'
 join altOCLC c on a.OCN = c.altoclc
 join oclcSans500 o on c.altoclc = o.ocn
+
+--Clear out OCLCNotes and NotesAnalsyis for a reload of all OCLC Numbers and then redo the comparisons
+/*--step 1: delete from notesanalysis
+delete from notesAnalysis
+where keyoclcNotes in(
+    select n.keyoclcNotes
+    from FSU_OCLC a -- university specific table, assumes reconciliations done for OCLC numbers and nonprinting bib numbers
+    join altOCLC o on a.oclc = o.altoclc
+    join oclcNotes n on o.oclc = n.oclc
+) */
+
+/*--step 2: delete from oclcNotes
+delete from oclcNotes where keyoclcNotes in(
+select distinct keyoclcnotes from(
+    select n.keyoclcNotes
+    from FSU_OCLC a -- university specific table, assumes reconciliations done for OCLC numbers and nonprinting bib numbers
+    join altOCLC o on a.oclc = o.altoclc
+    join oclcNotes n on o.oclc = n.oclc
+    )
+)*/

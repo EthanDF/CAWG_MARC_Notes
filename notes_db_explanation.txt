@@ -38,15 +38,17 @@ notes_db DB Explainer:
 	a temporary table designed to identify the bibNumbers associated with FIU. Some of the values may not exist on AlephBibs due to a lack of printed MARC 001 value.
 	- bib (integer) - fk of alephBibs
 
-* FIU_OCN - 
-	a temporary table designed to update AlephBibs with the correct bib number based on a match between the OCLC number on this table and on alephBibs. Not yet utilized.
-	- bib (integer) - fk of FIU
+* FSU_OCLC - 
+	a temporary table designed to update AlephBibs with the correct bib number based on a match between the OCLC number on this table and on alephBibs.
+	- bib (integer) - fk of FSU 
 	- OCLC (integer) - the OCLC number associated with the bib in Aleph
 
-* FSU_OCLC - 
-	a temporary table designed to update AlephBibs with the correct bib number based on a match between the OCLC number on this table and on alephBibs. Not yet utilized.
-	- bib (integer) - fk of FSU (not fully implemented yet)
-	- OCLC (integer) - the OCLC number associated with the bib in Aleph
+* FSUHoldings -
+	a temporary table designed to identify the bibNumbers associated with FSU and associate all AlephBibs for FSU with their sublibrary and collection. 
+	- bib (integer) aleph bib number
+	- hol (integer) aleph holdings number
+	- sublib (char) aleph sublibrary for the holdings number
+	- coll (char) aleph collection code for the holdings number
 
 * notesAnalysis - 
 	contains the results of comparisons between AlephNotes and OCLCNotes utilizing the fuzzywuzzy near matching ratios.
