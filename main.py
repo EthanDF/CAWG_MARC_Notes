@@ -138,6 +138,7 @@ def execute():
     bibNotesDict = kbnDictionary()
 
     tc = time.perf_counter()
+    print('starting comparisons...')
     for b in bibNotesDict.keys():
 
         # this query is too broad and returns uncomparable notes
