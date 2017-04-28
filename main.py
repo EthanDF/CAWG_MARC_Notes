@@ -137,6 +137,7 @@ def execute():
 
     bibNotesDict = kbnDictionary()
 
+    tc = time.perf_counter()
     for b in bibNotesDict.keys():
 
         # this query is too broad and returns uncomparable notes
@@ -206,6 +207,8 @@ def execute():
                 recordCounter += 1
 
             if len(resultList) >= 10000:
+                print('\tfinished comparisons in ' + str(time.perf_counter() - tc) + ' seconds')
+                tc = time.perf_counter()
                 print('writing to database, up to record '+str(recordCounter))
                 t1 = time.perf_counter()
                 addResultsTonotesAnalysis(resultList)
