@@ -183,10 +183,8 @@ def execute():
 
             for y in oN:
                 keyOCLCNote = y[0]
-                oclcNoteVal = y[1]
-
                 # add some unicode normalization to the strings prior to comparisons
-                oclcNoteVal = x[1]
+                oclcNoteVal = y[1]
                 oclcNoteVal = normalizeUnicodeString(oclcNoteVal)
 
                 ratioRatio = fuzz.ratio(alephNoteVal, oclcNoteVal)
