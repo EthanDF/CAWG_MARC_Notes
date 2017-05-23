@@ -16,7 +16,7 @@ def writeResultsToCSV(file, list):
 def addDataTooclcNotes(list):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.executemany('insert into oclcNotes (oclc, noteFormOrder, notes) VALUES(?,?,?)',list)
+    c.executemany('insert into oclcNotes (oclc, noteFormOrder, notes, subfield5) VALUES(?,?,?,?)',list)
     conn.commit()
     # print('1):', all_rows)
     conn.close()
@@ -172,13 +172,16 @@ def oclcmarcRead(debug=0):
                 oclcSans500.append(int(oclcNumber))
                 if debug == 1:
                     print('\tadding to Sans500')
-            marc500Counter = 0
 
+            # count the notes for the form order - starting with 0
+            marc500Counter = 0
+            # iterate through the MARC 500 fields - appending to noteList and then to marc500List
             for note in marc500s:
                 noteList = []
                 noteList.append(oclcNumber)
                 noteList.append(marc500Counter)
                 noteList.append(note['a'])
+                noteList.append(note['5'])
                 marc500List.append(noteList)
                 marc500Counter += 1
 
