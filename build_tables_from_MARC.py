@@ -29,7 +29,7 @@ def getExtantBibs():
 def checkForOCLCNumber(oclcNumber):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.execute('Select * from alephBibs WHERE OCN = {my_id}'.
+    c.execute('Select * from alephBibs WHERE OCLC = {my_id}'.
               format(my_id=oclcNumber))
     all_rows = c.fetchall()
     conn.close()
@@ -38,7 +38,7 @@ def checkForOCLCNumber(oclcNumber):
 def addDataTobibList(list):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.executemany('insert into alephBibs (bibNumber, OCN, LDRForm, Form, GPO, GPub) VALUES(?,?,?,?,?,?)',list)
+    c.executemany('insert into alephBibs (bibNumber, OCLC, LDRForm, Form, GPO, GPub) VALUES(?,?,?,?,?,?)',list)
     conn.commit()
     # print('1):', all_rows)
     conn.close()

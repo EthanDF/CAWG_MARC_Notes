@@ -54,7 +54,7 @@ def addOCLCNumstooclcSans500(oclcSans500, debug):
 
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.execute('select OCN from oclcSans500')
+    c.execute('select OCLC from oclcSans500')
     all_rows = c.fetchall()
     conn.close()
 
@@ -73,7 +73,7 @@ def addOCLCNumstooclcSans500(oclcSans500, debug):
 
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.executemany('insert into oclcSans500 (OCN) VALUES(?)', inputList)
+    c.executemany('insert into oclcSans500 (OCLC) VALUES(?)', inputList)
     conn.commit()
     conn.close()
 
